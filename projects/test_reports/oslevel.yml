@@ -1,0 +1,18 @@
+---
+- hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  ignore_errors: yes
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Collect only os facts
+      ansible.builtin.setup:
+        filter:
+          - 'ansible_distribution'
+          - 'ansible_distribution_version'
+          - 'ansible_hostname'
+    - template:
+        src: os.j2
+        dest: /home/inampk48/bos_reports/osinfo.out
+      delegate_to: sfldmilx031.driv.com

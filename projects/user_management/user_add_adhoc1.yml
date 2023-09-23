@@ -1,0 +1,45 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+    - stdgrps: ['sapteam', 'dbateam', 'taunix', 'stgteam']
+  tasks:
+    - name: Checking if {{ user }} user exists
+      shell: id -u {{ user }}
+      register: user_exists
+      ignore_errors: true
+    - name: Message
+      fail:
+        msg: "{{ user }} already exist!, Skipping the next steps"
+      when: user_exists.rc == 0
+    - name: Creating "{{ comment }}" with ID "{{ user }}" in servers "{{ target }}"
+      user:
+        name: "{{ user }}"
+        groups: "{{ group }}"
+        append: yes
+        comment: "{{ comment }}"
+        password: "{{ password | password_hash('sha512') }}"
+        state: present
+      when: group in stdgrps
+    - name: Creating user {{ comment }} with ID {{ user }} on all AIX hosts
+      user:
+        name: "{{ user }}"
+        comment: "{{ comment }}"
+        group: staff
+        password: "{{ password | password_hash('sha512') }}"
+        state: present
+      when: inventory_hostname in groups['aix'] and (group not in stdgrps)
+    - name: Creating user {{ comment }} with ID {{ user }} on all Linux hosts
+      user:
+        name: "{{ user }}"
+        comment: "{{ comment }}"
+        group: users
+        password: "{{ password | password_hash('sha512') }}"
+        state: present
+      when: inventory_hostname in groups['linux']  and (group not in stdgrps)
+    - name: Setting password on AIX
+      shell: "echo \"{{ user }}:{{ password }}\"|chpasswd"
+      when: inventory_hostname in groups['aix']

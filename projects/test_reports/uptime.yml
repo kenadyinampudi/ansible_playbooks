@@ -1,0 +1,32 @@
+- name: Checking the server  uptime
+  hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+  - name: Create the server uptime report
+    copy:
+      content: Server Name, Uptime
+      dest: /home/awxadm/serveruptime.csv
+    delegate_to: pcdcawxlxap01
+  - name: getting the uptime
+    shell: uptime|awk '{print $3" "$4}'
+    register: output_uptime
+    changed_when: "output_uptime.rc != 0"
+  - name:
+    set_fact:
+      UPTIME: "{{ output_uptime.stdout | replace('\t','') }}"
+  - name: display the message
+    lineinfile:
+      line: "{{ inventory_hostname }},{{ UPTIME }}"
+      insertafter: EOF
+      path: /home/awxadm/serveruptime.csv
+    delegate_to: pcdcawxlxap01
+
+- name: Mail uptime report
+  hosts: pcdcawxlxap01
+  tasks:
+  - name: server uptime mail
+    shell: echo -e "Hi,\n Please find the uptime report attached"|mutt -s "Uptime Report" "{{ mail }}" -a /home/awxadm/serveruptime.csv 

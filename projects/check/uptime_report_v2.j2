@@ -1,0 +1,5 @@
+{% for host in ansible_play_hosts_all %}
+{% if hostvars[host]['uptime_days']['stdout'] | int > 365 %}
+{{ host }} {{ "-" }} {{ hostvars[host]['uptime_days']['stdout'] }} {{ 'days' }}
+{% endif %}
+{% endfor %}    

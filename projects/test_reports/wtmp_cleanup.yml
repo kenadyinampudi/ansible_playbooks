@@ -1,0 +1,17 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  become_user: root
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Cleaning up WTMP file 
+      shell: /bin/ksh /home/inampk48/scripts/wtmp_shrink.ksh
+      when: inventory_hostname in groups['aix'] or inventory_hostname in groups['sap_aix'] or inventory_hostname in groups['dba_aix']
+    - name: Message
+      debug:
+        msg: THIS IS A LINUX MACHINE
+      when: inventory_hostname in groups['linux'] or inventory_hostname in groups['sap_linux'] or inventory_hostname in groups['dba_linux']  
+

@@ -1,0 +1,17 @@
+<html>
+<head>
+<style>
+h2 {text-align: center;}
+</style>
+</head>
+ <body>
+   <h2>Mksysb Error Report</h2>
+   <ul>
+     {% for host in ansible_play_hosts_all %}
+     {{ '###' }}{{ host }}{{ '###' }}
+     {{ '--------------------------' }}
+     <li> {{ hostvars[host]['mksys']['msg'] }} </li>
+     {% endfor %}
+   </ul>
+ </body>
+</html>

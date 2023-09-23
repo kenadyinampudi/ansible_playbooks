@@ -1,0 +1,42 @@
+---
+- name: Lock Users 
+  hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  any_errors_fatal: false
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+    - myusers: ['awxadm', 'root', 'inampk48']
+  tasks:
+    - name: Warn about generic accounts
+      debug:
+        msg: "{{ user }} is a generic account. DO NOT ATTEMPT TO LOCK THIS ACCOUNT!"
+      when: user in myusers
+
+    - name: Check if the user exists {{ user }}
+      shell: id -u {{ user }}
+      register: user_exists
+      ignore_errors: true
+    
+    - name: Locking {{ user }} Linux 
+      shell: "passwd -l {{ user }}"
+      when: "user_exists.rc == 0 and inventory_hostname in groups['linux'] and user not in myusers"
+    
+    - name: Locking {{ user }} AIX
+      shell: "chuser account_locked=true {{ user }}"
+      when: "user_exists.rc == 0 and inventory_hostname in groups['aix'] and user not in myusers"
+
+    - name: User does not exist
+      debug:
+        msg: |
+          {% set not_available_hosts = [] %}
+          {% for host in ansible_play_hosts_all %}
+            {% if hostvars[host]['user_exists']['rc'] != 0 %}
+              {% set _ = not_available_hosts.append(hostvars[host]['inventory_hostname']) %}
+            {% endif %}
+          {% endfor %}
+          {% for host in not_available_hosts | unique %}
+            {{ host }} - User does not exist
+          {% endfor %}
+      run_once: true
+      delegate_to: localhost

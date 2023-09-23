@@ -1,0 +1,20 @@
+---
+- hosts: sfldmilx031
+  gather_facts: no
+  ignore_unreachable: yes
+  become_user: inampk48 
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Generating OS_Report 
+      shell: /bin/ksh /home/inampk48/scripts/os_report_for_ansible.ksh
+      register: results
+    - name: Saving the report to a file
+      copy:
+        content: "{{ results.stdout }}"
+        dest: "/home/inampk48/OS_version.csv"
+     # delegate_to: pcdcawxlxap01
+    - name: Mailing the report
+      shell: echo -e "Hi,\n Please find the OS version report attached"|mutt -s "OS version report" "{{ mail }}" -a /home/inampk48/OS_version.csv
+        # delegate_to: pcdcawxlxap01

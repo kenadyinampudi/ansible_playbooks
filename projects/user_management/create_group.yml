@@ -1,0 +1,31 @@
+---
+- hosts: all 
+  #  no_log: true
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Checking GID conflict
+      shell: grep {{ gid }} /etc/group
+      register: gid_conflict
+      ignore_errors: true
+    - name: Checking Group conflict
+      shell: grep -q {{ group }} /etc/group
+      register: group_conflict
+      ignore_errors: true
+    - name: Message Group already exists on the below servers
+      debug:
+        msg: Group already exist! 
+      when: group_conflict.rc == 0 
+    - name: Message There is GID conflict on the below servers
+      debug:
+        var: gid_conflict.stdout_lines
+      when: group_conflict.rc !=0 and gid_conflict.rc == 0
+    - name: creating "{{ group }}"
+      group:
+        name: "{{ group }}"
+        state: present
+        gid: "{{ gid }}"
+      when: gid_conflict.rc != 0 and group_conflict.rc !=0

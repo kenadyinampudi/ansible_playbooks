@@ -1,0 +1,31 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  tasks:
+    - block:
+        - fail: msg="Please check the server name. This is not an AIX machine"
+          when: "'aix' not in group_names"
+        - name: "Mounting NFS"
+          command: "mount 134.238.142.243:/mksysb /mnt"
+          register: nfsmount
+          ignore_errors: true
+        - debug:
+            msg: There is an issue with NFS mount, Please check
+          when:  nfsmount.rc != 0
+        - name: "Runing mksysb backup"
+          mksysb:
+            name: "{{inventory_hostname}}.mksysb"
+            storage_path: /mnt
+            exclude_files: yes
+          when: nfsmount.rc == 0
+          register: mksys
+          failed_when: '"mksysb: Backup Completed Successfully" not in mksys._msg'
+      always:   
+        - pause:
+            minutes: 2
+          delegate_to: localhost
+        - name: "Unmounting NFS"
+          mount:
+            path: "/mnt"
+            state: unmounted
+          when:  nfsmount.rc == 0

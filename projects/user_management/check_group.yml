@@ -1,0 +1,21 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Checking if {{ group }} group exists
+      shell: grep {{ group }} /etc/group
+      register: group_exists
+      ignore_errors: true
+    - name: Message
+      debug:
+        msg: "Group {{ group }} does not exists."
+      when: group_exists.rc != 0
+    - name: Message
+      debug:
+        var: group_exists.stdout_lines[0]
+      when: group_exists.rc == 0
+

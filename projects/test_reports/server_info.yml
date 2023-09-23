@@ -1,0 +1,40 @@
+- name: Checking the server  info
+  hosts: all
+  ignore_errors: yes
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+  - name: Create the server info report
+    copy:
+      content: Server Name, fqdn, ipaddr, distro, distro_version, totalmem, freemem
+      dest: /home/awxadm/serverinfo.csv
+    delegate_to: pcdcawxlxap01
+  - name: display the message
+    lineinfile:
+      line: "{{ ansible_facts['hostname'] }},{{ ansible_facts['fqdn'] }},{{ ansible_facts['default_ipv4']['address'] }},{{ ansible_facts['distribution'] }},{{ ansible_facts['distribution_version'] }},{{ ansible_facts['memtotal_mb'] }},{{ ansible_facts['memfree_mb'] }}"
+      insertafter: EOF
+      path: /home/awxadm/serverinfo.csv
+    delegate_to: pcdcawxlxap01 
+
+- name: Mail info report
+  hosts: pcdcawxlxap01
+  tasks:
+  - name: server info mail
+    mail:
+      subject: Server info report
+      body: |
+          Hi,
+
+          Please find attached server info report.
+
+          Regards,
+          Kennedy
+      from: "UNIX Automation <root@pcdcawxlxap01.driv.com>"
+      to:
+        - kennedy.inampudi@driv.com
+      cc:
+        - kennedy.inampudi@driv.com
+      attach:
+        - /home/awxadm/serverinfo.csv

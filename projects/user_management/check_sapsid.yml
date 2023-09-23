@@ -1,0 +1,25 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Message
+      fail:
+        msg: "{{ target }} is not a SAP server"
+      when: "'sap' not in group_names"
+    - name:  Checking SAP ID's"
+      shell: "cat /etc/passwd|grep adm|grep -i sap|awk -F: '{print $1}'"
+      register: userid
+      ignore_errors: true
+      when: inventory_hostname in groups['sap']
+    - name: SAP SID's on the server
+      shell: id "{{ item }}"
+      register: id
+      when: userid.rc == 0 and (inventory_hostname in groups['sap'])
+      with_items: "{{ userid.stdout.split('\n') }}"
+    - name: More details of the SID ID's
+      debug:
+        msg: "{{ id.results|map(attribute='stdout')|list }}"
+      when: userid.rc == 0

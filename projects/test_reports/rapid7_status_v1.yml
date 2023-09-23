@@ -1,0 +1,24 @@
+- name: Checking the rapid7 info
+  hosts: "{{ target }}"
+  ignore_errors: yes
+  gather_facts: no 
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - debug:
+        msg: This is an AIX server. Rapid7 agent is NOT installed!
+      when: inventory_hostname in groups['aix']
+    - name: Populate service facts
+      service_facts:
+      when: inventory_hostname in groups['redhat'] or inventory_hostname in groups['suse']
+    - debug:
+        msg: Rapid7 Service is NOT running!
+      when: ansible_facts.services['ir_agent.service'].state != 'running'
+    - debug:
+        msg: Rapid7 Service is running!
+      when: ansible_facts.services['ir_agent.service'].state == 'running'
+    - debug:
+        msg: Rapid7 is NOT installed!
+      when: ansible_facts.services['ir_agent.service'] is not defined

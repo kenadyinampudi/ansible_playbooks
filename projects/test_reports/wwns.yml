@@ -1,0 +1,15 @@
+- name: Getting WWN of the server
+  hosts: "{{ target }}"
+  ignore_errors: yes
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: WWW's of {{ target }}
+      debug: var=ansible_fibre_channel_wwn
+      when: inventory_hostname in groups['aix'] or inventory_hostname in groups['sap_aix'] or inventory_hostname in groups['dba_aix']
+    - name: Message
+      debug:
+        msg: THIS IS A LINUX MACHINE
+      when: inventory_hostname in groups['linux'] or inventory_hostname in groups['sap_linux'] or inventory_hostname in groups['dba_linux']

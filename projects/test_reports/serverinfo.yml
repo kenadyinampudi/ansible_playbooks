@@ -1,0 +1,13 @@
+---
+- name: Server Information Summary
+  hosts: all
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+   - name: Create serverinfo.txt
+     template:
+       src: accessfacts.j2
+       dest: /home/inampk48/serverinfo.txt
+     delegate_to: sfldmilx031.driv.com

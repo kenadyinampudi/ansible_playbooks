@@ -1,0 +1,12 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - local_action: shell date +%d-%b-%y
+      register: date
+      run_once: True
+    - name: copy src.txt as dest.txt in the same dir 
+      copy:
+        src: /etc/passwd
+        dest: /etc/passwd-"{{ date }}"

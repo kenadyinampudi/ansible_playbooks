@@ -1,0 +1,25 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Message
+      fail:
+        msg: "{{ target }} is not a Database server"
+      when: "'dba' not in group_names"
+    - name:  Checking Oracle ID's"
+      shell: "cat /etc/passwd|awk -F : '{print $1}'|grep -i '^ora.*$'"
+      register: userid
+      ignore_errors: true
+      when: inventory_hostname in groups['dba']  
+    - shell: id "{{ item }}"
+      register: id
+      when: userid.rc == 0 and (inventory_hostname in groups['dba'])
+      with_items: "{{ userid.stdout.split('\n') }}"
+    - name: Below is the USERID  details
+      debug:
+        msg: "{{ id.results|map(attribute='stdout')|list }}"
+      when: userid.rc == 0

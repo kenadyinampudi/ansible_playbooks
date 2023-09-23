@@ -1,0 +1,6 @@
+plugin: ibm.power_hmc.powervm_inventory
+hmc_hosts:
+  - hmc: cdcvilhmc001
+    user: inampk48
+    password: inampk48
+

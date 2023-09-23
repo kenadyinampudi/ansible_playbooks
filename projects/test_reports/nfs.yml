@@ -1,0 +1,16 @@
+---
+- name: Get NFS mountpoint info
+  hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  ignore_errors: yes
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: NFS mount pointd 
+      shell: mount |grep nfs
+      register: nfs
+    - template:
+        src: nfs.j2
+        dest: /home/inampk48/nfs.out
+      delegate_to: sfldmilx031.driv.com

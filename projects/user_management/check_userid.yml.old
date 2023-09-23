@@ -1,0 +1,22 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  max_fail_percentage: 150
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name:  Checking "{{ user }}" in "{{ target }}"
+      shell: "id {{ user }}"    
+      register: userid
+      ignore_errors: true
+    - name: Below is the USERID "{{ user }}" details
+      debug:
+        var: userid.stdout_lines[0]
+      when: userid.rc == 0
+    - name: Message
+      debug:
+        msg: "{{ user }} doesnot exist"
+      when: userid.rc != 0
+    

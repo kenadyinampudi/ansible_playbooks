@@ -1,0 +1,38 @@
+- name: Get the list of all the nodes which are running over an year
+  hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Check uptime
+      shell: uptime|awk '{print $3}'
+      ignore_errors: yes  # Ignore errors if the task fails due to unreachable hosts
+      register: uptime_days
+    - local_action: shell date +%d-%b-%y
+      register: date
+      run_once: True
+    - name: Create uptime_report.html using Jinja2
+      template:
+        src: uptime_report.j2
+        dest: /home/inampk48/uptime_report.html
+      run_once: True
+      delegate_to: pcdcawxlxap01
+    - name: Email uptime report
+      shell:  mutt -e "set content_type=text/html" "{{ mail }}" -s "Uptime Report" < /home/inampk48/uptime_report.html
+      run_once: True
+      delegate_to: pcdcawxlxap01
+        #- name: Mailling mksysb error report
+        #mail:
+        #subject: Uptime Report
+        #body: "{{ lookup('template','uptime_report.j2') }}"
+        #from: "Unix Automation <root@pcdcawxlxap01.driv.com>"
+        #to:
+        #  - kennedy.inampudi@driv.com
+        #cc:
+        #  - kennedy.inampudi@driv.com
+        #subtype: html
+        #charset: utf8
+        #run_once: True
+        #delegate_to: pcdcawxlxap01

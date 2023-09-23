@@ -1,0 +1,15 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name:  Checking "{{ user }}" in "{{ target }}" issued by "{{ awx_user_name }}"
+      register: userid
+      command: "id {{ user }}"
+      ignore_errors: true
+    - name: Below is the USERID "{{ user }}" details
+      debug:
+        var: userid.stdout_lines[0]

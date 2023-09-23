@@ -1,0 +1,29 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Message
+      fail:
+        msg: "{{ target }} is not a Database server"
+      when: "'dba' not in group_names"
+    - name:  Checking Oracle ID's"
+      shell: "cat /etc/passwd|awk -F : '{print $1}'|grep -i '^ora.*$'"
+      register: userid
+      ignore_errors: true
+      when: inventory_hostname in groups['dba']
+    - name: Reseting  Oracle ID's passwords on Linux servers
+      shell: "echo \"{{ item }}:{{ password }}\"|sudo /usr/sbin/chpasswd"
+      with_items: "{{ userid.stdout.split('\n') }}"
+      when: userid.rc == 0 and (inventory_hostname in groups['dba_linux'])
+    - name: Resetting Oracle ID's passwords on AIX servers
+      shell: "echo \"{{ item }}:{{ password }}\"|sudo chpasswd -c"
+      with_items: "{{ userid.stdout.split('\n') }}"
+      when: userid.rc == 0 and (inventory_hostname in groups['dba_aix'])
+    - name: Resetting failed login count on AIX
+      shell: "sudo chuser unsuccessful_login_count=0 {{ item }}"
+      with_items: "{{ userid.stdout.split('\n') }}"
+      when: userid.rc == 0 and (inventory_hostname in groups['dba_aix'])

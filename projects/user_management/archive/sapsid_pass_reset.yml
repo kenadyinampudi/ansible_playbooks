@@ -1,0 +1,26 @@
+---
+- hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Checking sidadm user
+      shell: ps -ef|grep dw.sap| awk '{print $1}'|sort|uniq|grep -v awxadm|grep -v root
+      register: sidadm
+      ignore_errors: true
+    - name: Reseting SAP sidadm password on Linux servers
+      user:
+        name: "{{ sidadm.stdout_lines[0] }}"
+        update_password: always
+        password: "{{ password | password_hash('sha512') }}"
+        password_lock: false
+      when: sidadm.rc == 0 and (inventory_hostname in groups['redhat'] or inventory_hostname in groups['suse'])
+    - name: Resetting SAP sidadm password on AIX servers
+      shell: "echo \"{{ sidadm.stdout_lines[0] }}:{{ password }}\"|chpasswd -c"
+      when: sidadm.rc == 0 and (inventory_hostname in groups['aix'])
+    - name: Message
+      debug:
+        msg: "SAP is not running"
+      when: sidadm.rc != 0

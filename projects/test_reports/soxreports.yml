@@ -1,0 +1,20 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  become_user: root
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Generating the Report
+      shell: /bin/ksh /home/inampk48/scripts/unix_sec_rpt.ksh
+      register: results
+    - name: Saving the report to a file
+      copy:
+        content: "{{ results.stdout }}"
+        dest: "/home/inampk48/secrpt/Unix_Security_Report-{{ inventory_hostname }}.txt"
+      delegate_to: pcdcawxlxap01
+    - name: Mailing the report
+      shell: echo -e "Hi,\n Please find the Unix Security Report-{{ inventory_hostname }} attached"|mutt -s "Unix Security Report-{{ inventory_hostname }}" "{{ mail }}" -a /home/inampk48/secrpt/Unix_Security_Report-{{ inventory_hostname }}.txt
+      delegate_to: pcdcawxlxap01

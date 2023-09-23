@@ -1,0 +1,12 @@
+---
+- hosts: all
+  ignore_unreachable: yes
+  ignore_errors: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - template:
+        src: os.j2
+        dest: /home/inampk48/bos_reports/osinfo.out
+      delegate_to: sfldmilx031.driv.com 

@@ -1,0 +1,45 @@
+---
+- name: Lock Users
+  hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  any_errors_fatal: true
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+    - myusers: ['awxadm', 'root', 'inampk48']
+    - user_existence_map: {}
+  tasks:
+    - name: Fail play if user is in myusers
+      fail:
+        msg: "The specified user '{{ user }}' is in the 'myusers' list. Exiting playbook."
+      when: user in myusers
+
+    - name: Check if the user exists {{ user }} on all hosts
+      shell: id -u {{ user }}
+      register: user_exists_result
+      ignore_errors: true
+
+    - name: Set user existence status for each host
+      set_fact:
+        user_existence_map: "{{ user_existence_map | combine({inventory_hostname: hostvars[item].user_exists_result.rc == 0}) }}"
+      with_items: "{{ ansible_play_hosts }}"
+      run_once: true
+      delegate_to: pcdcawxlxap01 
+
+    - name: Locking {{ user }} Linux
+      shell: "passwd -l {{ user }}"
+      when: user_existence_map[inventory_hostname] and inventory_hostname in groups['linux'] and user not in myusers
+
+    - name: Locking {{ user }} AIX
+      shell: "chuser account_locked=true {{ user }}"
+      when: user_existence_map[inventory_hostname] and inventory_hostname in groups['aix'] and user not in myusers
+
+    - name: Generate report
+      debug:
+        msg: |
+          {% for host, exists in user_existence_map.items() %}
+            {{ host }} - User {% if exists %}exists{% else %}does not exist{% endif %}
+          {% endfor %}
+      run_once: true
+      delegate_to: pcdcawxlxap01
+

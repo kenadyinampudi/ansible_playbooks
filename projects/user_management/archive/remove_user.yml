@@ -1,0 +1,19 @@
+---
+- hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+    - myusers: ['root', 'bin', 'mail', 'inampk48', 'awxadm', '*adm', 'oracle']
+  tasks:
+    - name: Removing {{ user }} from all servers
+      user:
+        name: "{{ user }}"
+        state: absent
+        remove: yes
+      when: user not in myusers
+    - name:  Message
+      debug:
+        msg: "{{ user }} is a generic account. DO NOT ATTEMPT TO REMOVE THIS ACCOUNT!"
+      when: user in myusers

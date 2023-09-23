@@ -1,0 +1,38 @@
+- name: Get the list of all the nodes which are running over an year
+  hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Check uptime prior reboot
+      ignore_errors: True
+      shell: uptime|awk '{print $3}'
+      register: uptime_days
+    - local_action: shell date +%d-%b-%y
+      register: date
+      run_once: True
+    - name: Create uptime_report 
+      template:
+        src: uptime_report.j2
+        dest: /home/inampk48/uptime_report.out
+      run_once: True
+      delegate_to: pcdcawxlxap01
+    - shell: sort -k3 -nr /home/inampk48/uptime_report.out> /home/inampk48/uptime_report_sorted.out
+      run_once: True
+      delegate_to: pcdcawxlxap01
+    - blockinfile: 
+        path: /home/inampk48/uptime_report_sorted.out
+        insertbefore : BOF
+        block: |
+          Uptime Report
+          Created - {{ date }} 
+          ##########################
+          Servers up for more than an Year
+          ------------------------------------
+        run_once: True
+        delegate_to: pcdcawxlxap01
+    - shell: mail -s "Uptime report" kennedy.inampudi@driv.com </home/inampk48/uptime_report_sorted.out
+      run_once: True
+      delegate_to: pcdcawxlxap01

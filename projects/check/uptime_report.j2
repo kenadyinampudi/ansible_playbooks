@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    /* Center align the container */
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    h2 {
+      text-align: center;
+      background-color: #B0E0E6;
+      padding: 10px;
+      margin-bottom: 10px; /* Add some space between the header and table */
+    }
+
+    h3 {
+      text-align: center;
+      margin-top: 5px; /* Add some space above the date */
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 50%; /* Reduce the table width to fit the content */
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 3px; /* Further reduce cell padding for a more compact table */
+      text-align: center;
+    }
+
+    th {
+      background-color: #B0E0E6;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .note {
+      background-color: #FF6347;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px; /* Add some space above the note */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Uptime Report</h2>
+    <h3>Created on: {{ date.stdout }}</h3>
+
+    <div class="servers-up-for-more-than-an-year">
+      <h4>Servers with Uptime > 1 Year</h4> <!-- Updated header for better clarity -->
+      <table>
+        <tr>
+          <th>Server</th> <!-- Updated column header for better clarity -->
+          <th>Uptime (days)</th>
+        </tr>
+        {% set hosts_with_uptime = [] %}
+        {% for host in ansible_play_hosts_all %}
+          {% set uptime_days = hostvars[host]['uptime_days']['stdout'] | default(-1) | int %}
+          {% if uptime_days > 365 %}
+            {% set _ = hosts_with_uptime.append({'host': host, 'uptime': uptime_days}) %}
+          {% endif %}
+        {% endfor %}
+
+        {% for host_info in hosts_with_uptime | sort(attribute='uptime', reverse=true) %}
+        <tr>
+          <td>{{ host_info.host }}</td>
+          <td>{{ host_info.uptime }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="note">
+      <p>Please review the uptime report, check with the Application Owner, and schedule for a reboot if needed.</p>
+    </div>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,25 @@
+---
+- hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+    - myusers: ['root', 'bin', 'mail', 'awxadm', '*adm', 'oracle', 'jenkins']  
+    - unixteam: ['kumarv25', 'ganjab81', 'x1vasuna', 'meixnj63', 'inampk48', 'x1shukla', 'x1jinusu']
+  tasks:
+    - name: Removing {{ user }} from {{ target }}
+      user:
+        name: "{{ user }}"
+        state: absent
+        remove: yes
+      when: user not in myusers and (user not in unixteam)
+    - name: Message
+      fail: 
+        msg: "{{ user }} is a generic account. DO NOT ATTEMPT TO REMOVE THIS ACCOUNT!"
+      when: user in myusers 
+    - name: Message
+      fail: 
+        msg: "{{ user }} belongs to Unixteam. PLEASE CHECK WITH UNIXTEAM!"
+      when: user in unixteam
+

@@ -1,0 +1,29 @@
+---
+- hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Checking the server
+      fail:
+        msg: "Not a SAP server, Check with the user and Report any abnormalities to UNIX team"
+      when: "'sap' not in group_names"
+      #  - meta: end_play
+      #when: "'sap' not in group_names"
+    - name: Checking if {{ user }} user exists
+      shell: id -u {{ user }}
+      register: user_exists
+      ignore_errors: true
+    - name: Creating SAP team member "{{ comment }}"  with the userid "{{ user }}" in all SAP servers
+      user:
+        name: "{{ user }}"
+        group: "sapteam"
+        comment: "{{ comment }}"
+        password: "{{ password | password_hash('sha512') }}"
+        state: present
+      when: user_exists.rc != 0
+    - name: Setting password on AIX
+      shell: "echo \"{{ user }}:{{ password }}\"|chpasswd"
+      when: user_exists.rc != 0 and (inventory_hostname in groups['sap_aix'])

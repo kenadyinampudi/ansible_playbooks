@@ -1,0 +1,42 @@
+---
+- name: Generating User ID information for Audit
+  hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - name: Step-1 Generating User ID information  
+      ansible.builtin.script: useridinfo.sh
+      register: results
+    - name: Step-2 Copy output to a file
+      copy:
+        content: |-
+          {{ 'UserID,Fullname,Descritpiton' }}
+          {% for host in ansible_play_hosts_all %}
+          {{ hostvars[host]['results']['stdout'] }}
+          {% endfor %}
+        dest: "/home/inampk48/useridinfo.csv"
+      run_once: True
+      delegate_to: pcdcawxlxap01
+    - name: Step-3 e-mail the User ID information report
+      shell: echo -e "Hi,\n\nPlease find attached users log report.\n\nRegards,\nUnix Team"|mutt -s "Audit information - UserID details" "{{ mail }}" -a /home/inampk48/useridinfo.csv
+      run_once: True
+      delegate_to: pcdcawxlxap01
+        #    - name: Mail user report
+        # mail:
+        # subject: All users log
+        # body: |
+        #  Hi,
+        #
+        # Please find attached users log report.
+        #
+        # Regards,
+        # Kennedy
+        #from: "UNIX Automation <root@pcdcawxlxap01.driv.com>"
+        #to:
+        #- kennedy.inampudi@driv
+        #cc:
+        #- kennedy.inampudi@driv.com
+        #attach:
+        #- "/home/inampk48/useridinfo.csv"
+        #delegate_to: pcdcawxlxap01
+        #run_once: True

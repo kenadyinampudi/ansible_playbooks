@@ -1,0 +1,7 @@
+---
+- hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - name: pinging the servers
+      ping:

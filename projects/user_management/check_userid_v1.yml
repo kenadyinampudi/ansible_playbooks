@@ -1,0 +1,25 @@
+- hosts: "{{ target }}"
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+  ignore_unreachable: yes
+  tasks:
+    - name: Checking if the user exists
+      shell: "cat /etc/passwd | grep -i ^{{ user }}:"
+      register: userid_check
+      ignore_errors: true
+
+    - copy:
+        dest: /home/inampk48/userinfo.txt
+        content: |-
+          {% for host in ansible_play_hosts_all %}
+          {{ host }}{% if userid_check.rc == 0 and host in userid_check.stdout %}-User exists{% else %}-User does not exist{% endif %}
+          {% endfor %}
+      run_once: true
+      delegate_to: pcdcawxlxap01
+
+    - debug:
+        msg: "{{ lookup('file', '/home/inampk48/userinfo.txt') }}"
+      run_once: true
+      delegate_to: pcdcawxlxap01
+

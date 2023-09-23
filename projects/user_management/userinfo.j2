@@ -1,0 +1,4 @@
+{% for host in ansible_play_hosts_all %}
+{{ host }}{% if hostvars[host]['userid_check']['rc'] == 0 %}-User exists{% else %}-User does not exist{% endif %}
+{% endfor %}
+

@@ -1,0 +1,35 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+    - myusers: ['ap1adm', 'lcpadm', 'aq1adm', 'lcqadm', 'ad1adm', 'lcdadm', 'hvdadm', 'hjdadm', 'hvqadm', 'hjqadm', 'hvpadm', 'hjpadm']
+  tasks:
+    - name: Message
+      fail:
+        msg: "{{ target }} is not a SAP server"
+      when: "'sap' not in group_names"
+    - name:  Checking SAP ID's"
+      shell: "cat /etc/passwd|grep adm|grep -i sap|awk -F: '{print $1}'"
+      register: userid
+      ignore_errors: true
+      when: inventory_hostname in groups['sap']
+    - name: Reseting  SAP ID's passwords on Linux servers
+      shell: "echo \"{{ item }}:{{ password }}\"|sudo /usr/sbin/chpasswd"
+      when: userid.rc == 0 and (inventory_hostname in groups['sap_linux'])and (item not in myusers)
+      with_items: "{{ userid.stdout.split('\n') }}"
+    - name: Resetting SAP ID's passwords on AIX servers
+      shell: "echo \"{{ item }}:{{ password }}\"|sudo chpasswd -c"
+      when: userid.rc == 0 and (inventory_hostname in groups['sap_aix'])and (item not in myusers)
+      with_items: "{{ userid.stdout.split('\n') }}"
+    - name: Resetting failed login count on AIX
+      shell: "sudo chuser unsuccessful_login_count=0 {{ item }}"
+      when: userid.rc == 0 and (inventory_hostname in groups['sap_aix'])and (item not in myusers)
+      with_items: "{{ userid.stdout.split('\n') }}"
+    - name:  Message
+      debug:
+        msg: "{{ item }} has an exception. NO PASSWORD RESET ACTION PERFORMED ON THIS ACCOUNT"
+      when: item in myusers
+      with_items: "{{ userid.stdout.split('\n') }}"

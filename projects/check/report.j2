@@ -1,0 +1,22 @@
+<html>
+<head>
+<style>
+h2 {text-align: center;}
+h3 {text-align: center;}
+</style>
+</head>
+ <body>
+   <h2>Mksysb Report</h2>
+   <h3>Created on - <strong> {{ date.stdout }} </strong></h3>
+   <ul>
+     {% for host in ansible_play_hosts_all %}
+     {% if 'Completed Successfully' in hostvars[host]['mksys']['msg'] %}
+     <li> {{ host }} </li>
+     <ul>
+     <p> {{ hostvars[host]['mksys']['msg'] }} </p>
+     </ul>
+     {% endif %}
+     {% endfor %}
+   </ul>
+ </body>
+</html>

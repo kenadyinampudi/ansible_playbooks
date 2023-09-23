@@ -1,0 +1,4 @@
+{% for host in groups['all'] %}
+{{ host }}
+{{ hostvars[host]['nfs']['stdout_lines'] }}
+{%endfor%}

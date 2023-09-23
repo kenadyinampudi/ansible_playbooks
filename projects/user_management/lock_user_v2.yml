@@ -1,0 +1,29 @@
+---
+- name: Lock Users
+  hosts: "{{ target }}"
+  gather_facts: no
+
+  vars:
+    myusers: ['awxadm', 'root', 'inampk48']
+
+  tasks:
+    - name: Warn about generic accounts
+      debug:
+        msg: "{{ user }} is a generic account. DO NOT ATTEMPT TO LOCK THIS ACCOUNT!"
+      when: user in myusers
+
+    - name: Check if the user exists
+      command: id "{{ user }}"
+      register: user_info
+      ignore_errors: true
+
+    - name: Lock user on Linux
+      user:
+        name: "{{ user }}"
+        state: locked
+      when: user_info.rc == 0 and user not in myusers
+
+    - name: User does not exist
+      debug:
+        msg: "{{ user }} does not exist"
+      when: user_info.failed

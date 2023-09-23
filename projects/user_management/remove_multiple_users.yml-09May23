@@ -1,0 +1,21 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+    - myusers: ['root', 'test', 'bin', 'mail', 'inampk48', 'awxadm', '*adm', 'oracle']
+  tasks:
+    - name: Removing {{ user }} from {{ target }}
+      user:
+        name: "{{ item }}"
+        state: absent
+        remove: yes
+      with_items: "{{ user.split(',') }}"
+      when: item not in myusers
+    - name:  Message
+      debug:
+        msg: "{{ item }} is a generic account. DO NOT ATTEMPT TO REMOVE THIS ACCOUNT!"
+      with_items: "{{ user.split(',') }}"
+      when: item in myusers

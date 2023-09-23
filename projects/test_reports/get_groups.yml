@@ -1,0 +1,41 @@
+---
+- hosts: all
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - debug: 
+        msg: "{{inventory_hostname}} - AIX"
+      when: inventory_hostname  in groups['aix']
+    - debug: 
+        msg: "{{inventory_hostname}} - LINUX"
+      when: inventory_hostname  in groups['linux']
+    - debug: 
+        msg: "{{inventory_hostname}} - SAP"
+      when: inventory_hostname  in groups['sap']
+    - debug: 
+        msg: "{{inventory_hostname}} - SAP_AIX"
+      when: inventory_hostname  in groups['sap_aix']
+    - debug: 
+        msg: "{{inventory_hostname}} - SAP_LIUNX"
+      when: inventory_hostname  in groups['sap_linux']
+    - debug: 
+        msg: "{{inventory_hostname}} - DBA"
+      when: inventory_hostname  in groups['dba']
+    - debug: 
+        msg: "{{inventory_hostname}} - DBA_AIX"
+      when: inventory_hostname  in groups['dba_aix']
+    - debug: 
+        msg: "{{inventory_hostname}} - DBA_LINUX"
+      when: inventory_hostname  in groups['dba_linux']
+- hosts: ungrouped
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - debug:
+        msg: "{{inventory_hostname}} - UNGROUPED"
