@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alternate Clone Disk Report</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 50%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        h1 {
+            color: #336699;
+        }
+        p {
+            color: #666666;
+        }
+        .note {
+            color: #FF0000;
+            font-style: italic;
+        }
+        .success {
+            color: #008000;
+        }
+        .fail {
+            color: #FF0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Alternate Clone Disk Report</h1>
+    <table>
+        <tr>
+            <th>Server</th>
+            <th>Alt Clone Disk</th>
+            <th>Date Alt Clone Taken</th>
+            <th>State</th>
+        </tr>
+        {% for host in play_hosts %}
+        <tr>
+            <td>{{ host }}</td>
+            <td>{% if hostvars[host]['altdisk'].stdout | default('') == '' %}<span class="note">N/A</span>{% else %}{{ hostvars[host]['altdisk'].stdout }}{% endif %}</td>
+            <td>
+              {% if hostvars[host]['altdisk'].stdout | default('') == '' %}
+               <span class="note">N/A</span>
+              {% else %}
+              {{ report_date }}
+              {% endif %}
+            </td>
+            <td>{% if hostvars[host]['alt_disk_failed'] or (hostvars[host]['altdisk'].stdout | default('') == 'N/A') %}<span class="fail">Failed</span>{% else %}<span class="success">Success</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>If the Disks show "<span class="note">N/A</span>," please check the server for any spare disks and take alt_clone manually or request the storage to allocate a new disk for alt_clone.</p>
+</body>
+</html>

@@ -1,0 +1,24 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - name: Checking if {{ awx_user_name }} user exists
+      shell: id -u {{ awx_user_name }}
+      register: user_exists
+      ignore_errors: true
+    - name: Message
+      debug:
+        msg: "{{ awx_user_name }} already exist!, Skipping the next steps"
+      when: user_exists.rc == 0
+    - name: Creating "{{ awx_user_first_name }}" with ID "{{ awx_user_name }}" in servers "{{ target }}"
+      user:
+        name: "{{ awx_user_name }}"
+        groups: taunix
+        append: yes
+        comment: "{{ awx_user_first_name }}"
+        state: present
+      when: user_exists.rc != 0
+    - name: Setting password on AIX
+      shell: "echo \"{{ awx_user_name }}:{{ password }}\"|chpasswd -c"
+      when: user_exists.rc != 0

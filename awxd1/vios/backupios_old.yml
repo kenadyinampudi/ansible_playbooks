@@ -1,0 +1,27 @@
+---
+- name: "backupios"
+  hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  collections:
+  - ibm.power_vios
+  tasks:
+    - block:
+        - name: "Mount NFS"
+          command: "mount 10.135.48.70:/export/mksysb /mnt"
+          register: nfsmount
+          ignore_errors: true
+        - backupios:
+            file: "/mnt/{{inventory_hostname}}.mksysb"
+            mksysb: yes
+            savemedialib: no
+          when: nfsmount.rc == 0 and ( inventory_hostname in groups['vios'] )
+          register: mksys
+          failed_when: mksys.stderr != ""
+      always:
+        - pause:
+            minutes: 2
+        - name: "unmount NFS"
+          mount:
+            path: "/mnt"
+            state: unmounted

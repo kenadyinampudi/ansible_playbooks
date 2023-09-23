@@ -1,0 +1,16 @@
+%TYPE=Incident 
+group_name: GIOS Maint. - Unix
+category: Unix Server
+subcategory: Process Availability
+
+
+
+Failed servers - mksysb
+
+{% if 'Completed Successfully' not in ['mksys']['stdout'] %}
+{{ '###' }}{{ inventory_hostname }}{{ '###' }}
+{{ '--------------------------' }}
+{{ ['mksys']['stdout'] }}
+{{ ['mksys']['stderr'] }}
+{% endif %}
+

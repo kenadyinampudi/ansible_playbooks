@@ -1,0 +1,93 @@
+- hosts: "{{ target }}"
+  gather_facts: no
+  collections:
+    - ibm.power_aix
+  tasks:
+    # Fail the playbook if the target is not an AIX machine
+    - fail:
+        msg: "Please check the server name. This is not an AIX machine"
+      when: "'aix' not in group_names"
+      tags: nomail
+      
+    # Check reachability of hosts
+    - name: "Checking reachability of hosts"
+      wait_for_connection:
+        timeout: 20  # Adjust the timeout value as per your needs
+      tags: nomail
+      
+    # Check for alternate disk (including old_rootvg)
+    - name: "Checking for alternate disk"
+      shell: lspv | grep root | grep -v active | awk '{print $1}'
+      register: altdisk
+      ignore_errors: yes
+      tags: nomail
+      
+    # Fail the playbook if any host is unreachable
+    - name: "Fail the playbook if unreachable"
+      fail:
+        msg: "The server {{ inventory_hostname }} is unreachable"
+      when: altdisk is failed
+      tags: nomail
+
+    # Clean old copy of alt_clone disk (if available)
+    - name: "Cleaning old copy"
+      alt_disk:
+        action: clean
+        allow_old_rootvg: yes  # Allow cleaning old_rootvg
+      when: altdisk.stdout | length > 0
+      tags: nomail
+      
+    # Create new alt_clone disk (if available)
+    - name: "Creating new alt_disk"
+      alt_disk:
+        action: copy
+        targets: "{{ altdisk.stdout_lines[0] }}"
+        allow_old_rootvg: yes  # Allow creating new alt_disk for old_rootvg
+      when: altdisk.stdout | length > 0
+      register: alt_disk_result
+      tags: nomail
+      
+  post_tasks:
+    # Set the alt_disk_failed variable based on the task result
+    - name: Set alt_disk_failed variable
+      set_fact:
+        alt_disk_failed: "{{ alt_disk_result.rc | default(1) != 0 or not alt_disk_result }}"
+      
+    # Gather current date and time on the control node (localhost)
+    - name: "Gather current date and time"
+      delegate_to: localhost
+      set_fact:
+        report_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}"
+      run_once: True
+     
+    # Mailling CAPT alt_clone error report
+    - name: Mailling CAPT alt_clone error report
+      mail:
+        subject: CAPT alt_clone error report
+        body: "{{ lookup('template', 'alt_clone_report_template.j2') }}"
+        from: "Unix Automation <root@pcdcawxlxap01.driv.com>"
+        to:
+          - giosunix@driv.com  # Add CAPT recipient's email
+        cc:
+          - kennedy.inampudi@driv.com
+        subtype: html
+        charset: utf8
+      when: "'captaix' in group_names"
+      run_once: true  # This task will run just once on pcdcawxlxap01
+      delegate_to: pcdcawxlxap01
+
+    # Mailling MPPS alt_clone error report
+    - name: Mailling MPPS alt_clone error report
+      mail:
+        subject: MPPS alt_clone error report
+        body: "{{ lookup('template', 'alt_clone_report_template.j2') }}"
+        from: "Unix Automation <root@pcdcawxlxap01.driv.com>"
+        to:
+          - giosunix@driv.com  # Add MPPS recipient's email
+        cc:
+          - kennedy.inampudi@driv.com
+        subtype: html
+        charset: utf8
+      when: "'mppsaix' in group_names"
+      run_once: true  # This task will run just once on pcdcawxlxap01
+      delegate_to: pcdcawxlxap01

@@ -1,0 +1,7 @@
+- name: Getting WWN of the server
+  hosts: "{{ target }}"
+  ignore_errors: yes
+  ignore_unreachable: yes
+  tasks:
+    - name: WWW's of {{ target }}
+      debug: var=ansible_fibre_channel_wwn

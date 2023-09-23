@@ -1,0 +1,36 @@
+<html>
+<head>
+<style>
+h2 {text-align: center;}
+h3 {text-align: center;}
+table, th, td {
+  border:1px solid black;
+}
+td {
+  text-align: center;
+}
+</style>
+</head>
+ <body>
+   <h2 style="background-color:powderblue;">Uptime Report</h2>
+   <h3>Created on - {{ date.stdout }}</h3>
+   <ul>
+     <li> Servers up for more than an Year</li>
+     <table  align="center">
+      <tr>
+       <th>Server Name</th>
+       <th>Uptime in days</th>
+      </tr>
+     {% for host in ansible_play_hosts_all %}
+     {% if hostvars[host]['uptime_days']['stdout'] | int > 365 %}
+      <tr>
+      <td>{{ host }}</td>
+      <td>{{ hostvars[host]['uptime_days']['stdout'] }} {{ 'days' }}</td>
+     </tr>
+     {% endif %}
+     {% endfor %}    
+     </table>
+   </ul>
+<p style="background-color:tomato;"><b>Note:</b> Please review the uptime report, Check with Application Owner and schedule for a reboot.</p>
+ </body>
+</html>

@@ -1,0 +1,35 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - lineinfile:
+        path: /home/inampk48/useridinfo.csv
+        line: UserID,Fullname,Descritpiton
+	  delegate_to: pcdcawxlxap01
+    - name: Generating user info  
+	  ansible.builtin.script: useridinfo.sh
+	  register: output
+    - name: copy output to file
+      copy:
+        content: "{{ results.stdout }}"
+        dest: "/home/inampk48/useridinfo.csv"
+      delegate_to: pcdcawxlxap01
+    - name: Mail user report
+      mail:
+        subject: All users log
+        body: |
+          Hi,
+
+          Please find attached users log report.
+
+          Regards,
+          Kennedy
+        from: "UNIX Automation <root@pcdcawxlxap01.driv.com>"
+        to:
+        - kennedy.inampudi@driv
+        cc:
+        - kennedy.inampudi@driv.com
+        attach:
+        - "/home/inampk48/useridinfo.csv"
+      delegate_to: pcdcawxlxap01

@@ -1,0 +1,62 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  tasks:
+    - block:
+        - fail: msg="Please check the server name. This is not an AIX machine"
+          when: "'aix' not in group_names"
+        - name: "Mounting NFS"
+          command: "mount 134.238.142.243:/mksysb /mnt"
+          register: nfsmount
+          ignore_errors: true
+        - debug:
+            msg: There is an issue with NFS mount, Please check
+          when:  nfsmount.rc != 0
+        - name: "Runing mksysb backup"
+          mksysb:
+            name: "{{inventory_hostname}}.mksysb"
+            storage_path: /mnt
+            exclude_files: yes
+          when: nfsmount.rc == 0
+          register: mksys
+          failed_when: '"mksysb: Backup Completed Successfully" not in mksys.msg'
+      always:   
+        - pause:
+            minutes: 1
+          run_once: True  
+        - name: "Unmounting NFS"
+          mount:
+            path: "/mnt"
+            state: unmounted
+          when:  nfsmount.rc == 0
+        - local_action: shell date +%d-%b-%y
+          register: date
+          run_once: True
+        - name: Copy output to file
+          copy:
+            dest: /home/inampk48/mksysb_error_report.out
+            content: |-
+              {% for host in ansible_play_hosts_all %}
+              {% if 'Completed Successfully' not in hostvars[host]['mksys']['msg'] %}
+              {{ '###' }}{{ host }}{{ '###' }}
+              {{ '--------------------------' }}
+              {{ hostvars[host]['mksys']['msg'] }}
+              {% endif %}
+              {% endfor %}
+          run_once: True    
+          delegate_to: pcdcawxlxap01
+        - name: Mailling mksysb error report
+          mail:
+            subject: Mksysb error report
+            body: "{{ lookup('template','report_v1.j2') }}"
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - kennedy.inampudi@driv.com
+            cc:
+              - kennedy.inampudi@driv.com
+            attach: 
+              - /home/inampk48/mksysb_error_report.out
+            subtype: html
+            charset: utf8
+          run_once: True    
+          delegate_to: pcdcawxlxap01

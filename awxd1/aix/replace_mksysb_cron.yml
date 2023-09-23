@@ -1,0 +1,20 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - lineinfile:
+        path: /var/spool/cron/crontabs/root
+        regexp: "/usr/local/scripts/mksysb.sh" 
+        state: absent
+        backup: yes
+    - lineinfile:
+        path: /var/spool/cron/crontabs/root
+        regexp: "/system.backup" 
+        state: absent
+        backup: yes
+    - lineinfile:
+        path: /var/spool/cron/crontabs/root
+        regexp: "/mksysb.backup" 
+        state: absent
+        backup: yes

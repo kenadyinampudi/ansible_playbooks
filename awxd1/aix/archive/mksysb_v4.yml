@@ -1,0 +1,87 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  collections:
+  - ibm.power_aix
+  tasks:
+    - block:
+        - fail: msg="Please check the server name. This is not an AIX machine"
+          when: "'aix' not in group_names"
+        - name: "Mounting NFS"
+          command: "mount 134.238.142.243:/mksysb /bkpmksysb"
+          register: nfsmount
+          ignore_errors: true
+        - debug:
+            msg: There is an issue with NFS mount, Please check
+          when:  nfsmount.rc != 0
+        - name: "Runing mksysb backup"
+          backup:
+            action: create
+            type: mksysb
+            location: /bkpmksysb/{{inventory_hostname}}.mksysb
+            exclude_files: yes
+            extend_fs: yes
+            force: yes
+          when: nfsmount.rc == 0
+          register: mksys
+          failed_when: mksys.stderr != ""
+      always:   
+        - pause:
+            minutes: 1
+          run_once: True
+        - name: "Unmounting NFS"
+          command: "umount /bkpmksysb"
+          when:  nfsmount.rc == 0
+          ignore_errors: true
+        - local_action: shell date +%d-%b-%y
+          register: date
+          run_once: True
+          when: nfsmount.rc == 0
+        - name: Copy output to file
+          copy:
+            dest: /home/inampk48/mksysb_error_report.out
+            content: |-
+              {% for host in ansible_play_hosts_all %}
+              {% if 'Completed Successfully' not in hostvars[host]['mksys']['stdout'] %}
+              {{ '###' }}{{ host }}{{ '###' }}
+              {{ '--------------------------' }}
+              {{ hostvars[host]['mksys']['stdout'] }}
+              {{ hostvars[host]['mksys']['stderr'] }}
+              {% endif %}
+              {% endfor %}
+          run_once: True    
+          delegate_to: pcdcawxlxap01
+        - name: Mailling mksysb error report
+          mail:
+            subject: Mksysb error report
+            body: "{{ lookup('template','report_v2.j2') }}"
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - kennedy.inampudi@driv.com
+            cc:
+              - kennedy.inampudi@driv.com
+            attach: 
+              - /home/inampk48/mksysb_error_report.out
+            subtype: html
+            charset: utf8
+          run_once: True    
+          delegate_to: pcdcawxlxap01
+        - name: Generate Service Now incident
+          mail:
+            subject: mksysb failed - Please check and rerun mksysb on {{ inventory_hostname }}
+            body: |
+              '%TYPE=Incident 
+               group_name: GIOS Maint. - Unix
+               category: Unix Server
+               subcategory: Process Availability
+               
+               ###{{ inventory_hostname }}###
+               --------------------------
+               {{ mksys.stdout }}
+               {{ mksys.stderr }}'
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - ServiceNowTEST@tenneco.com
+          when: '"Completed Successfully" not in mksys.stdout'
+          delegate_to: pcdcawxlxap01

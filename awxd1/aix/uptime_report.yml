@@ -1,0 +1,23 @@
+- name: Get the list of all the nodes which are running over an year
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Check uptime prior reboot
+      shell: uptime|awk '{print $3}'
+      register: uptime_days
+    - local_action: shell date +%d-%b-%y
+      register: date
+      run_once: True
+    - name: Mailling mksysb error report
+      mail:
+        subject: Uptime Report
+        body: "{{ lookup('template','uptime_report.j2') }}"
+        from: "Unix Automation <root@pcdcawxlxap01.driv.com>"
+        to:
+          - kennedy.inampudi@driv.com
+        cc:
+          - kennedy.inampudi@driv.com
+        subtype: html
+        charset: utf8
+      run_once: True
+      delegate_to: pcdcawxlxap01

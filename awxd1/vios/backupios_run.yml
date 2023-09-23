@@ -1,0 +1,129 @@
+---
+- name: "backupios"
+  hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  collections:
+  - ibm.power_vios
+  tasks:
+    - block:
+        - name: "Mounting MPPS pcdcmksaxap01 NFS"
+          command: "mount 10.128.41.15:/mksysb /bkpmksysb"
+          when: inventory_hostname in groups['mppsvios']
+          register: nfsmountmpps
+          tags: rerun
+        - name: "Mounting CAPT pcdcmksaxap02 NFS"
+          command: "mount 10.0.48.22:/mksysb /bkpmksysb"
+          register: nfsmountcapt
+          when: inventory_hostname in groups['captvios']
+          tags: rerun
+        - debug:
+            msg: There is an issue with MPPS NF pcdcmksaxap01 to {{ inventory_hostname }}, Please check
+          when:  inventory_hostname in groups['mppsvios'] and nfsmountmpps is not defined
+        - debug:
+            msg: There is an issue with CAPT NFS mount pcdcmksaxap02 to {{ inventory_hostname }}, Please check
+          when:  inventory_hostname in groups['captvios'] and nfsmountcapt is not defined
+        - backupios:
+            file: "/bkpmksysb/{{inventory_hostname}}.mksysb"
+            mksysb: yes
+            savemedialib: no
+            nopack:
+              - /etc/exclude.rootvg
+          register: mksys
+          failed_when: "'Completed Successfully' not in mksys.stdout"
+          tags: rerun
+      always:
+        - pause:
+            minutes: 1
+          run_once: True
+        - name: "Unmounting NFS"
+          command: "umount /bkpmksysb"
+          ignore_errors: true
+          tags: rerun
+        - local_action: shell date +%d-%b-%y
+          register: date
+          run_once: True
+        - name: Copy output to file
+          copy:
+            dest: /home/inampk48/vios_mksysb_error_report.out
+            content: |-
+              {% for host in ansible_play_hosts_all %}
+              {% if hostvars[host]['mksys'] is defined and 'Completed Successfully' not in hostvars[host]['mksys']['stdout'] %}
+              {{ '###' }}{{ host }}{{ '###' }}
+              {{ '--------------------------' }}
+              {{ hostvars[host]['mksys']['stdout'] }}
+              {{ hostvars[host]['mksys']['stderr'] }}
+              {% endif %}
+              {% endfor %}
+          run_once: True
+          delegate_to: pcdcawxlxap01
+        - name: Mailling VIOS backupios error report
+          mail:
+            subject: VIOS Mksysb error report - MPPS
+            body: "{{ lookup('template','report.j2') }}"
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - mpunixadmins@driv.com
+            cc:
+              - kennedy.inampudi@driv.com
+            attach:
+              - /home/inampk48/vios_mksysb_error_report.out
+            subtype: html
+            charset: utf8
+          run_once: True
+          delegate_to: pcdcawxlxap01
+          when: inventory_hostname in groups['mppsvios']
+        - name: Mailling mksysb error report
+          mail:
+            subject: VIOS Mksysb error report - CAPT
+            body: "{{ lookup('template','report.j2') }}"
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - giosunix@driv.com
+            cc:
+              - kennedy.inampudi@driv.com
+            attach:
+              - /home/inampk48/vios_mksysb_error_report.out
+            subtype: html
+            charset: utf8
+          run_once: True
+          delegate_to: pcdcawxlxap01
+          when: inventory_hostname in groups['captvios']
+        - name: Generate Service Now incident
+          mail:
+            subject: vios mksysb failed - Please check and rerun mksysb on {{ inventory_hostname }}
+            body: |
+              %TYPE=Incident
+              group_name: GIOS Maint. - Unix
+              category: Unix Server
+              subcategory: Process Availability
+              cmdb_ci: {{ inventory_hostname }}
+
+              ###{{ inventory_hostname }}###
+              --------------------------
+              {{ mksys.stdout }}
+              {{ mksys.stderr }}
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - servicenow@tenneco.com
+          when: "'Completed Successfully' not in mksys.stdout and (inventory_hostname in groups['mppsvios'])"
+          delegate_to: pcdcawxlxap01
+        - name: Generate Service Now incident
+          mail:
+            subject: vios mksysb failed - Please check and rerun mksysb on {{ inventory_hostname }}
+            body: |
+              %TYPE=Incident
+              group_name: ISD_UNIX
+              category: Unix Server
+              subcategory: Process 
+              cmdb_ci: {{ inventory_hostname }}
+
+              ###{{ inventory_hostname }}###
+              --------------------------
+              {{ mksys.stdout }}
+              {{ mksys.stderr }}
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - servicenow@tenneco.com
+          when: "'Completed Successfully' not in mksys.stdout and (inventory_hostname in groups['captvios'])"
+          delegate_to: pcdcawxlxap01

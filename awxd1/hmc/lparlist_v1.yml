@@ -1,0 +1,125 @@
+---
+lpars:
+  - name: phlypcdcbcpaxdb99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: phlycdcpilax257
+    hmc: phlypahmc011.pt.int.tenneco.com
+    ms: phpowervm002-8284-22A-21D8FFW
+  - name: pcdcna3axap01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdceu3axap01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcps2axdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcplpaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcprmaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcccsaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcptaaxdb99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcta2axdb99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpscaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpgtaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcptaaxap99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpimaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcta2axap99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcforaxap01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcforaxap02
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcforaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpsnaxap03
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpsnaxap02
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpsnaxap01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpsnaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpcuaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpasaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpgwaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpaiaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpsraxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcsspaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpjbaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcpepaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdch1paxap01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdch1paxap99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdch1paxdb99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcptaaxfs01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcps1axdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdchypaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcunxaxap01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcbcpaxdb99
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcbkpaxdm01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcmngaxdb01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX
+  - name: pcdcsapaxrs01
+    hmc: phlypahmc007.fmmotorparts.com
+    ms: PHPVM022-9040-MR9-78AAECX

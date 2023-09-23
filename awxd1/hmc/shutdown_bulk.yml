@@ -1,0 +1,31 @@
+---
+- name: Stop logical partitions
+  hosts: all 
+  gather_facts: no
+  collections:
+      - ibm.power_hmc
+  connection: local
+  vars_files: 
+    - lparlist_v1.yml
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    curr_hmc_auth:
+      username: inampk48
+      password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          64313031393964346637633830333039613730636366643863333262303837643636663365626639
+          6562643435353532393630373038366163343433623636630a656564326136636230656532343066
+          63366461333765623634373730313537316334376630363664613164323831383265663761616466
+          3737373236626562380a643564303463313961616666363734623064616630613332306632336136
+          3066
+  tasks:
+    - name: Stop logical partitions
+      powervm_lpar_instance:
+        hmc_host: "{{ item.hmc }}"
+        hmc_auth: "{{ curr_hmc_auth }}"
+        system_name: "{{ item.ms }}"
+        vm_name: "{{ item.name }}"
+        action: shutdown
+      with_items:
+        - "{{ lpars }}"
+      when: item.hmc == inventory_hostname  

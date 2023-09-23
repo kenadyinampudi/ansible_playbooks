@@ -1,0 +1,15 @@
+---
+- hosts: sfldmiax140 
+  gather_facts: no
+  ignore_unreachable: yes
+  become: true
+  become_user: root
+  collections:
+  - ibm.power_aix
+  tasks:
+    - name: "Unmounting NFS"
+      mount:
+        state: mount
+        node: cdcvilax113
+        mount_dir: /mksysb
+        mount_over_dir: /mnt

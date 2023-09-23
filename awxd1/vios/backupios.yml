@@ -1,0 +1,75 @@
+---
+- name: "backupios"
+  hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  collections:
+  - ibm.power_vios
+  tasks:
+    - block:
+        - name: "Mounting MPPS pcdcmksaxap01 NFS"
+          command: "mount 10.128.41.15:/mksysb /bkpmksysb"
+          when: inventory_hostname in groups['mppsvios']
+          register: nfsmountmpps
+          tags: rerun
+        - name: "Mounting CAPT pcdcmksaxap02 NFS"
+          command: "mount 10.0.48.22:/mksysb /bkpmksysb"
+          register: nfsmountcapt
+          when: inventory_hostname in groups['captvios']
+          tags: rerun
+        - debug:
+            msg: There is an issue with MPPS NF pcdcmksaxap01 to {{ inventory_hostname }}, Please check
+          when:  (inventory_hostname in groups['mppsvios']) and (nfsmountmpps.rc != 0)
+        - debug:
+            msg: There is an issue with CAPT NFS mount pcdcmksaxap02 to {{ inventory_hostname }}, Please check
+          when:  (inventory_hostname in groups['captvios']) and (nfsmountcapt.rc != 0)
+        - backupios:
+            file: "/bkpmksysb/{{inventory_hostname}}.mksysb"
+            mksysb: yes
+            savemedialib: no
+            nopack:
+              - /etc/exclude.rootvg
+          register: mksys
+          failed_when: "'Completed Successfully' not in mksys.stdout"
+          tags: rerun
+      always:
+        - pause:
+            minutes: 1
+          run_once: True
+        - name: "Unmounting NFS"
+          command: "umount /bkpmksysb"
+          tags: unmount
+          ignore_errors: true
+          tags: rerun
+        - local_action: shell date +%d-%b-%y
+          register: date
+          run_once: True
+        - name: Copy output to file
+          copy:
+            dest: /home/inampk48/vios_mksysb_error_report.out
+            content: |-
+              {% for host in ansible_play_hosts_all %}
+              {% if hostvars[host]['mksys'] is defined and 'Completed Successfully' not in hostvars[host]['mksys']['stdout'] %}
+              {{ '###' }}{{ host }}{{ '###' }}
+              {{ '--------------------------' }}
+              {{ hostvars[host]['mksys']['stdout'] }}
+              {{ hostvars[host]['mksys']['stderr'] }}
+              {% endif %}
+              {% endfor %}
+          run_once: True
+          delegate_to: pcdcawxlxap01
+        - name: Mailling mksysb error report
+          mail:
+            subject: VIOS Mksysb error report
+            body: "{{ lookup('template','report.j2') }}"
+            from: "Unix Mksysb Automation <root@pcdcawxlxap01.driv.com>"
+            to:
+              - kennedy.inampudi@driv.com
+            cc:
+              - kennedy.inampudi@driv.com
+            attach:
+              - /home/inampk48/vios_mksysb_error_report.out
+            subtype: html
+            charset: utf8
+          run_once: True
+          delegate_to: pcdcawxlxap01

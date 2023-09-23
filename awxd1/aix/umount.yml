@@ -1,0 +1,13 @@
+---
+- hosts: sfldmiax140 
+  gather_facts: no
+  ignore_unreachable: yes
+  become: true
+  become_user: root
+  collections:
+  - ibm.power_aix
+  tasks:
+    - name: "Unmounting NFS"
+      mount:
+        state: umount
+        mount_dir: /mnt

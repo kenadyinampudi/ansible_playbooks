@@ -1,0 +1,19 @@
+#!/usr/bin/ksh
+#
+#
+
+cat << EOF | tee /var/tmp/tensyslogadd
+errnotify:
+en_name="ten-central-log"
+en_persistenceflg = 1
+en_method = "logger -pnotice Msg from Error Log: \$(errpt -a -l \$1 ) ; logger -ttenerrpt \$(errpt -l \$1 | grep -v ^IDENTIFIER "
+EOF
+
+sudo odmadd /var/tmp/tensyslogadd
+
+rm /var/tmp/tensyslogadd
+
+sudo cp /etc/syslog.conf /etc/syslog.conf.$(date +%m%d%Y)
+grep -q unixlogs /etc/syslog.conf
+[[ ${?} -ne 0 ]] && echo '*.notice           @unixlogs.driv.com' | sudo tee -a /etc/syslog.conf
+[[ ${?} -eq 0 ]] && sudo refresh -s syslogd

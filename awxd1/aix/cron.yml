@@ -1,0 +1,10 @@
+---
+-  hosts: "{{ target }}" 
+   gather_facts: no
+   ignore_unreachable: yes
+   tasks:
+     - cron:
+         name: diskspace
+         minute: 15
+         job: df > /home/inampk48/df.output
+         state: present

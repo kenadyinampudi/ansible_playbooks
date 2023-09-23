@@ -1,0 +1,32 @@
+<html>
+<head>
+<style>
+h2 {text-align: center;}
+h3 {text-align: center;}
+</style>
+</head>
+ <body>
+   <h2 style="background-color:powderblue;">Uptime Report</h2>
+   <h3>Created on - {{ date.stdout }}</h3>
+   <ul>
+     <li> Servers not rebooted in 365 days</li>
+     {% for host in ansible_play_hosts_all %}
+     {% if hostvars[host]['uptime_days']['stdout'] | int > 365 %}
+     <ul>
+     <li> {{ host }} {{ - }} {{ hostvars[host]['mksys']['stdout'] }} </li>
+     </ul>
+     {% endif %}
+     {% endfor %}
+     <li> Servers not rebooted in 180 days</li>
+     {% for host in ansible_play_hosts_all %}
+     {% if hostvars[host]['uptime_days']['stdout'] | int > 180 %}
+     <ul>
+     <li> {{ host }} {{ - }} {{ hostvars[host]['mksys']['stdout'] }} </li>
+     </ul>
+     {% endif %}
+     {% endfor %}
+   </ul>
+<p style="background-color:tomato;"><b>Note:</b> Please review the uptime report, Check with Application Owner and schedule for a reboot.</p>
+ </body>
+</html>
+		  

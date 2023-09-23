@@ -1,0 +1,15 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  collections:
+    - ibm.power_aix
+  tasks:
+    - name: Cleaning old copy
+      alt_disk:
+        action: clean
+        
+    - alt_disk:
+        action: copy
+        targets: "{{ disk }}"
+        allow_old_rootvg: yes
+

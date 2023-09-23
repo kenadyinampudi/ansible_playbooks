@@ -1,0 +1,26 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - name: Generating AIX info
+      ansible.builtin.script: sysinfo-aix.ksh
+      register: results
+      tags: nomail
+    - name: Copy output to file
+      copy:
+        dest: /sysinfo/{{ inventory_hostname }}.out
+        content: "{{ results.stdout }}"
+      delegate_to: cdcvilax118
+      tags: nomail
+    - name: Mailling the report
+      mail:
+        subject: Sysinfo - {{ inventory_hostname }}
+        body: "{{ results.stdout }}"
+        from: "UNIX Automation <root@pcdcawxlxap01.driv.com>"
+        to:
+        - kennedy.inampudi@driv
+        cc:
+        - kennedy.inampudi@driv.com
+      delegate_to: pcdcawxlxap01  
+        

@@ -1,0 +1,31 @@
+<html>
+<head>
+<style>
+h2 {text-align: center;}
+h3 {text-align: center;}
+</style>
+</head>
+ <body>
+   <h2 style="background-color:powderblue;">Mksysb Report</h2>
+   <h3>Created on - {{ date.stdout }}</h3>
+   <ul>
+     <li> Failed Servers</li>
+     {% for host in ansible_play_hosts_all %}
+     {% if 'Completed Successfully' not in hostvars[host]['mksys']['stdout'] %}
+     <ul>
+     <li> {{ host }} </li>
+     </ul>
+     {% endif %}
+     {% endfor %}
+     <li> Successfull Servers</li>
+     {% for host in ansible_play_hosts_all %}
+     {% if 'Completed Successfully' in hostvars[host]['mksys']['stdout'] %}
+     <ul>
+     <li> {{ host }} </li>
+     </ul>
+     {% endif %}
+     {% endfor %}
+   </ul>
+<p style="background-color:tomato;"><b>Note:</b> Please find the attached report of output from failed servers, rerun mksysb on the failed servers as needed.</p>
+ </body>
+</html>

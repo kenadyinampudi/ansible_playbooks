@@ -1,0 +1,13 @@
+---
+- name: "Gather the mapping facts"
+  hosts: "{{ target }}" 
+  gather_facts: no
+  ignore_unreachable: yes
+  collections:
+  - ibm.power_vios
+  tasks:
+    - name: Gather the mapping facts
+      mapping_facts:
+    - name: Print the mapping facts
+      debug:
+        var: ansible_facts.mappings

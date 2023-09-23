@@ -1,0 +1,13 @@
+^./tmp/
+^./var/tmp/
+^./var/opt/OV/tmp/
+^./home/lpar2rrd/
+^./home/sanmontr/
+^./home/solwinds/
+^./home/supload*
+^./home/tauxrpt/
+^./home/tauxrpt/
+^./home/veritas/
+^./bkpmksb/
+^./cdmount/
+^./var/vio/CM/DB/

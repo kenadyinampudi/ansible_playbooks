@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - copy:
+        src: exclude.rootvg.review
+        dest: /etc/exclude.rootvg
+        owner: root
+        group: system
+        mode: '0644'
+        backup: yes

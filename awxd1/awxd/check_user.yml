@@ -1,0 +1,24 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name:  Checking "{{ user }}" in "{{ target }}"
+      shell: "cat /etc/passwd|awk -F : '{print $1}'|grep -i {{ user }}"
+      register: userid
+      ignore_errors: true
+    - shell: id "{{ item }}"
+      register: id
+      with_items: "{{ userid.stdout.split('\n') }}"
+      when: userid.rc == 0
+    - name: Below is the USERID  details
+      debug:
+        msg: "{{ id.results|map(attribute='stdout')|list }}"
+      when: userid.rc == 0
+    - name: Message
+      debug:
+        msg: "{{ user }} doesnot exist"
+      when: userid.rc != 0

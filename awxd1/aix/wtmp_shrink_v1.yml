@@ -1,0 +1,33 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  tasks:
+    - name: Check disk usage before script execution
+      ansible.builtin.shell:
+        cmd: df -gt /var
+      register: disk_usage_before
+      changed_when: false
+      ignore_errors: true
+      tags: pre-task
+
+    - name: Cleaning up WTMP file
+      ansible.builtin.script: wtmp_shrink.ksh
+
+    - name: Check disk usage after script execution
+      ansible.builtin.shell:
+        cmd: df -gt /var
+      register: disk_usage_after
+      changed_when: false
+      ignore_errors: true
+      tags: post-task
+
+    - name: Disk usage before cleanup
+      ansible.builtin.debug:
+        var: disk_usage_before.stdout_lines
+      tags: pre-task
+
+    - name: Disk usage after cleanup
+      ansible.builtin.debug:
+        var: disk_usage_after.stdout_lines
+      tags: post-task

@@ -1,0 +1,10 @@
+---
+- hosts: "{{ target }}"
+  ignore_unreachable: yes
+  #gather_facts: no
+  vars:
+    - ansible_python_interpreter: auto_silent
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: ping
+      ping:

@@ -1,0 +1,13 @@
+---
+- hosts: "{{ target }}"
+  gather_facts: no
+  ignore_unreachable: yes
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+  tasks:
+    - name: Adding ssh key
+      ansible.builtin.lineinfile:
+        path: "/home/{{ user }}/.ssh/authorized_keys"
+        line: "{{ key }}"     
+        create: yes
+        backup: yes
