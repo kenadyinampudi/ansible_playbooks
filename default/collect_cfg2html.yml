@@ -1,0 +1,15 @@
+---
+- name: Read HTML file from all hosts and create files on pcdcunxlxap01
+  hosts: "{{ target }}"  # Change 'all' to specify the group of hosts you want to read from
+  gather_facts: no
+  tasks:
+    - name: Read the HTML file
+      slurp:
+        src: "/home/tauxrpt/rpt_config/{{ inventory_hostname }}.html"
+      register: html_file
+
+    - name: Create new file on pcdcunxlxap06
+      delegate_to: pcdcunxlxap06  # Specify the target host
+      copy:
+        content: "{{ html_file.content | b64decode }}"
+        dest: "/containers/cfg2html/data/{{ inventory_hostname }}.{{ lookup('pipe', 'date +%Y%m%d') }}.html"

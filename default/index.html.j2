@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tenneco System reports</title>
+    <style>
+        h1 {
+            text-align: center;
+        }
+        table {
+            margin: 0 auto;
+        }
+        table, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 8px;
+            text-align: center; /* Center-align content in cells */
+        }
+        .thin-line {
+            border-top: 0.5px dotted; /* Thin line style */
+        }
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 50%;
+        }
+        .scroll-to-top:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tenneco System reports</h1>
+    <hr>
+    <center><table>
+        {% set column_count = 7 %}
+        {% for i in range(0, server_list | length, column_count) %}
+        <tr>
+            {% for server in server_list[i:i+column_count] %}
+            <td align=center><a href="#{{ server }}">{{ server }}</a></td>
+            {% endfor %}
+        </tr>
+      {% endfor %}
+    </table></center>
+    
+    {% for server in server_list %}
+    <h2 id="{{ server }}">{{ server }}</h2>
+    <ul>
+        {% for html_file in html_files.files %}
+        {% if server in html_file.path %}
+        <li><a href="{{ html_file.path | regex_replace('.*/', '') }}">{{ html_file.path | regex_replace('.*/', '') }}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    <hr class="thin-line">
+    {% endfor %}
+
+    <!-- Scroll-to-top button with text-based arrow -->
+    <a href="#" class="scroll-to-top">
+        ^ Top
+    </a>
+
+    <script>
+        // JavaScript to scroll to the top when the button is clicked
+        document.querySelector('.scroll-to-top').addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

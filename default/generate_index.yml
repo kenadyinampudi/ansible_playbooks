@@ -1,0 +1,19 @@
+---
+- hosts: pcdcunxlxap06
+  gather_facts: no
+  tasks:
+    - name: List HTML files
+      find:
+        paths: /containers/cfg2html/data
+        recurse: yes
+        patterns: "*.html"
+        excludes: "index.html"
+      register: html_files
+
+    - name: Generate server_list
+      set_fact:
+        server_list: "{{ html_files.files | map(attribute='path') | map('regex_replace', '.*?([^/]+)\\.\\d+\\.html$', '\\1') | unique | sort }}"
+    - name: Generate index.html
+      template:
+        src: index.html.j2
+        dest: /containers/cfg2html/data/index.html
